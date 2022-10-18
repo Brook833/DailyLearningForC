@@ -48,3 +48,34 @@ void useBigger(const string &s1, const string &s2, bool (*pf)(const string &, co
 ```c++
 useBigger(s1, s2, lengthCompare); //自动将函数lengthCompare转换成指向该函数的指针
 ```
+正如useBigger的声明语句所示，直接使用函数指针类型显得冗长而繁琐。类型别名和decltype能让我们简化使用了函数指针的代码：
+```c++
+typedef decltype(lengthCompare) Func2; //Func2是函数类型
+typedef decltype(lengthCompare) *FuncP2; //FuncP2是指向函数的指针
+```
+
+### 返回指向函数的指针
+和数组类似，虽然不能返回一个函数，但是能返回指向函数类型的指针。然而，我们必须把返回类型写成指针形式，编译器不会自动地将函数返回类型当成对应的指针类型处理。要想声明一个返回函数指针的函数，最简单的办法是使用类型别名：
+```c++
+using F = int(int*, int); //F是函数类型，不是指针
+using PF = int(*)(int*, int);  //PF是指针类型
+```
+其中我们使用类型别名将F定义成函数类型，将PF定义成指向函数类型的指针。必须时刻注意的是，和函数类型的形参不一样，返回类型不会自动地转换成指针。我们必须显示的将返回类型指定为指针：
+```c++
+PF f1(int); //正确，PF是指向函数的指针，f1返回指向函数的指针
+F f1(int);  //错误，F是函数类型，f1不能返回一个函数
+F *f1(int); //正确，显式的指定返回类型是指向函数的指针
+```
+### 将auto和decltype用于函数指针类型
+如果我们明确知道返回的函数是哪一个，就能使用decltype简化书写函数指针返回类型的过程。例如假定有两个函数，它们的返回类型都是string::size_type，并且各有两个const_string&类型的形参，此时我们可以编写第三个函数，它接受一个string类型的参数，返回一个指针，该指针指向前两个函数中的一个。
+```c++
+string::size_type sumLength(const string&, const string&);
+string::size_type largerLength(const string&, const string&);
+//根据其形参的取值，getFunc函数返回指向sumLength或者largerLength的指针
+decltype(sumLength) *getFybc(const string &);
+```
+
+声明getFunc唯一需要注意的地方是，牢记当我们将decltype作用于某个函数时，它返回函数类型而非指针类型。因此我们需要显式的加上*以表明我们需要返回指针，而非函数本身。
+
+int a(int , int);
+vector<detype(a) *> p; 
