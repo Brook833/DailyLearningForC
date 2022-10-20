@@ -1,5 +1,5 @@
 2022.10.20
-
+学习C++primer
 
 
 ### 定义一个返回this对象的函数
@@ -59,3 +59,15 @@ read函数从给定流中将数据读到给定的对象里，print函数则负�
 除此之外，关于上面的函数还有两点是非常重要的。第一点，read和print分别接受一个各自IO类型的引用作为其参数，这是因为IO类属于不能被拷贝的类型，因此我们只能通过引用来传递他们。而且，因为读取和写入的操作会改变流的内容，所以两个函数接受的都是普通引用，而非对常量的引用。
 
 第二点，print函数不负责换行。一般来说，执行输出任务的函数应该尽量较少对格式的控制，这样可以确保由用户代码来决定是否换行。
+
+### 定义add函数
+add函数接收两个Sales_data对象作为其参数，返回值是一个新的Sales_data,用于表示前两个对象的和:
+```c++
+Salse_data add(const Salse_data &data &lhs, const Sales_data &rhs){
+    Sales_data sum = lhs;  //把lhs的数据成员拷贝给sum
+    sum.combine(rhs);  //把rhs的数据成员加到sum当中
+    return sum;
+}
+```
+
+在函数体中，我们定义了一个新的Sales_data对象并将其命名为sum。sum将用于存放两笔交易的和，我们用lhs的副本来初始化sum。默认情况下，拷贝类的对象其实拷贝的是对象的数据成员。在拷贝完成之后，sum的bookNo、units_sold和revenue将和lhs一致。接下来我们调用combine函数，将rhs的units_sold和revenue添加给sum，最后，函数返回sum的副本。
