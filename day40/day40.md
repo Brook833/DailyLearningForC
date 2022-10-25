@@ -64,3 +64,31 @@ inline Screen &Screen::set(pos r, pos col, char ch) {
     return *this;   //将this对象作为坐直返回
 }
 ```
+
+和move操作一样，我们的set成员的返回值是调用set的对象的引用。
+
+返回引用的函数时左值的，意味值这些函数返回的是对象本身而非对象的副本。
+
+如果我们一系列这样的操作连接在一条表达式中的话：
+
+```c++
+//把光标移动到一个指定的位置，然后设置该位置的字符值。
+myScreen.move(4, 0).set('#');
+```
+
+这些操作将在同一个对象上执行。在上面的表达式中，我们首先移动myScreen内的光标，然后设置myScreen的contents成员。也就是说，上述语句等价于：
+
+```c++
+myScreen.move(4, 0);
+myScreen.set('#');
+```
+
+如果我们令move和set返回Screen而非Screen&，则上述语句的行为将大不相同。在此例中等价于：
+
+```c++
+//如果move返回Screen而非Screen&
+Screen temp = myScreen.move(4, 0); //对返回值进行拷贝。
+temp.set('#'); //不会改变myScreen的contents。
+```
+
+假如当初我们定义的返回类型不是引用，则move的返回值将是*this的副本，因此调用set只能改变临时副本，而不能改变myScreen的值。
