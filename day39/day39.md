@@ -72,3 +72,4 @@ private:
     por height = 0, width = 0;
     std::string contents;
 };
+```
