@@ -10,7 +10,6 @@ private:
     unsigned cursor = 0;
     std::string contents;
 
-    typedef std::string::size_type pos;
 public:
     Screen() = default;
     Screen(unsigned ht, unsigned wd) : height(ht), width(wd), contents(ht*wd, ' ') {}
