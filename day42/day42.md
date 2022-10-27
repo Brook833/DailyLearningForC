@@ -85,3 +85,66 @@ void Window_mgr::clear(ScreenIndex i) {
     s.contents = string(s.height * s.width, ' ');
 }
 ```
+
+一开始，首先把s定义成screens vector中第i个位置上的Screen引用，随后利用Screen的htight和width成员计算出一个新的string对象，并令其含有若干个空白字符，最后我们把这个含有很多空白的字符串赋给contents成员。
+
+如果clear不是Screen友元，上面的代码将无法通过编译，因此此时clear将不能访问Screen的height、width和contents成员。而当Screen将Window_mgr指定为其友元之后，Screen的所有成员对于Window_mgr就都变成可见的了。
+
+必须要注意一点是，友元关系不存在传递性。也就是说，如果Window_mgr有它自己的友元，则这些友元并不能理所当然地具有访问Screen的特权
+
+每个类负责控制自己的友元类或者友元函数。
+
+### 令成员函数作为友元
+
+除了令整个Window_mgr作为友元之外，Screen还可以只为clear提供访问权限。当把一个成员函数声明成友元时，必须明确指出该成员函数属于哪个类:
+
+```c++
+class Screen {
+    //Window_mgr::clear必须在Screen类之前被声明
+    friend void Window_mgr::clear(ScreenIndex);
+    //Screen类的剩余部分
+};
+```
+
+要想令某个成员函数作为友元，我们必须仔细组织程序的结构以满足声明和定义的彼此依赖关系。在这个例子中，我们必须按照如下方式设计程序：
+
+首先定义Window_mgr类，其中声明clear函数，但是不能定义它。在clear使用Screen的成员之前必须先声明Screen。
+
+接下来定义Screen，包括对于clear的友元声明。
+
+最后定义clear，此时 它才可以使用Screen的成员。
+
+### 函数重载和友元
+尽管重载函数的名字相同，但他们仍然是不同的函数。因此，如果一个类想把一组重载函数声明成它的友元，它需要对这组函数中的每一个分别声明：
+
+```c++
+//重载的storeOn函数
+extern std::ostream& storeOn(std::ostream &, Screen &);
+extern BitMap& storeOn(BitMap &, Screen &);
+class Screen {
+    //storeOn的ostream版本能访问Screen对象的私有部分
+    friend std::ostream& storeOn(std::ostream &, Screen &);
+    //...
+};
+```
+
+Screen类把接受ostream&的storeOn函数声明成它的友元，但是接受BitMap&作为参数的版本仍然不能访问Screen。
+
+### 友元声明和作用域
+类和非成员函数的声明不是必须在它们的友元声明之前。当一个名字第一次出现在一个友元声明中时，我们隐式的假定改名字在当前作用域是可见的，然而，友元本身不一定真的声明在当前作用域中。
+
+甚至就算在类的内部定义该函数，我们也必须在类的外部提供相应的声明从而使得函数可见。换句话说，即使我们仅仅是用声明友元的类的成员调用该成员函数，它也必须是被声明过的：
+
+```c++
+struct X {
+    friend void f() { /* 友元函数可以定义在类的内部 */ }
+    X() {f();}  //错误，f还没有被声明
+    void g();
+    void h();
+};
+void X::g() { return f(); } //错误，f没有被声明
+void f();   //声明f
+void X::h() { return f(); } //正确，现在f的声明在作用域中了
+```
+
+注意，有的编译器并不强制执行上述关于友元的限定规则。
