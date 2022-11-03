@@ -86,3 +86,19 @@ badbit表示系统级错误，如不可恢复的读写错误。通常情况下�
 标准库还定义了一组函数来查询这些标志位的状态。操作good在所有错误位均未置为的情况下返回true，而Bad、fail和eof则在对应错误位被置位时返回true。此外，在badbit被置位时，fail也会返回true。这意味着，使用good或fail是确定流的总体状态的正确方法。实际上，我们将流当做条件使用的代码就等价于！fail()。而eof和bad操作只能表示特定的错误。
 
 ### 管理条件状态
+流对象的rdstate成员返回一个iostate值，对应流的当前状态。setstate操作将给定条件位置位，表示发生了对应错误。clear成员是一个重载的成员：他有一个不接受参数的版本，而另一个版本接受一个iostate类型的参数。
+
+clear不接受参数的版本清除(复位)所有错误标志位。执行clear()后，调用good会返回true。我们可以这样使用这些成员:
+
+```c++
+auto old_state = cin.rdstate();  //记住cin的当前状态
+cin.clear();                     //使cin有效
+process_input(cin);              //使用cin
+cin.setstate(old_state);         //将cin置为原有状态
+```
+
+带参数的clear版本接受一个iostate值，表示流的新状态。为了复位单一的条件状态位，我们首先用rdstate读出当前条件状态，然后用位操作将所需位复位来生成新的状态。例如，下面的代码将failbit和badbit复位，但保持eofbit不变：
+
+```c++
+cin.clear(cin.rdstate() & ~cin.failbit & ~cin.badbit);
+```
