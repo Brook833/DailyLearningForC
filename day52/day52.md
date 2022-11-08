@@ -103,3 +103,27 @@ struct PersonInfo {
 类型PersonInfo的对象会有一个成员来表示人名，还有一个vector来保存此人的所有电话号码。
 
 我们的程序会读取数据文件，并创建一个PersonInfo的vector。vector中每个元素对应文件中的一条记录。我们在一个循环中处理输入数据，每个循环步读取一条记录，提取出一个人名和若干电话号码：
+
+```c++
+string line, word;  //分别保存来自输入的一行和单词
+vector<PersonInfo> people;  // 保存来自输入的所有记录
+//逐行从输入读取数据，直至cin遇到文件尾(或其他错误)
+while (getline(cin, line)) {
+    PersonInfo info;  // 创建一个保存此记录数据的对象
+    istringstream record(line);  // 将记录绑定到刚读入的行
+    record >> info.name;  // 读取名字
+    while (record >> word) {  // 读取电话号码
+        info.phones.push_back(word);  // 保持它们
+    }
+    people.push_back(info);  //  将此纪录追加到people末尾
+}
+```
+
+这里我们用getline从标准输入读取整条记录。如果getline调用成功，那么line中将保存这从输入文件而来的一条记录。在while中，我们定义了一个局部PersonInfo对象，来保存当前记录中的数据。
+
+接下来我们将一个istringstream与刚刚读取的文本行进行绑定，这样就可以在此istringstream上使用输入运算符来读取当前记录中的每个元素。我们首先读取人名，随后用一个whileu循环来读取此人的电话号码。
+
+当读取完line中所有数据后，内层while循环就结束了。此循环的工作方式与前面章节中读取cin的循环很相似，不同之处是，此循环是从一个string而不是标准输入读取数据。当string中的数据全部读出后，同样会触发“文件结束”信号，在record上的下一个输入操作会失败。
+
+我们将刚刚处理好的PersonInfo追加到vector中，外层while循环的一个循环步就随之结束了。外层while循环会继续执行，直至遇到cin的文件结束标识。
+
