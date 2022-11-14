@@ -59,3 +59,67 @@ vector<string> svec;  // 空vector
 cout << svec[0];  // 运行时错误，svec中没有元素
 cout << svec.at[0];  // 抛出一个out_of_range异常
 ```
+
+## 9.3.3 删除元素
+与添加元素的多种方式类似，(非array)容器也有多种删除元素的方式。表9.7列出了这些成员函数。
+
+| **表9.7: 顺序容器的删除操作** |  |
+| 这些操作会改变容器的大小，所以不适用于array |  |
+| forward_list有特殊版本的erase |  |
+| forward_list不支持pop_back;vector和string不支持pop_front |  |
+| c.pop_back() | 删除c中尾元素。若c为空，则函数行为未定义。函数返回void |
+| c.pop_fornt() | 删除c中首元素。若c为空，则函数行为未定义。函数返回void |
+| c.erase(p) | 删除迭代器p所指定的元素，返回一个指向被删元素之后的元素迭代器，若p直线为元素，则返回尾后迭代器。若p是尾后迭代器，则函数行为未定义 |
+| c.erase(b,e) | 删除迭代器b和e所指定范围内的元素。返回一个指向最后一个被删元素之后的迭代器，若e本身就是尾后迭代器，则函数也返回尾后迭代器 |
+| c.clear() | 删除c中的所有元素。返回void |
+
+**WARNING: 删除deque中除首尾位置之外的任何元素都会是所有迭代器、引用和指针失效。指向vector或string中删除点之后位置的迭代器、引用和指针都会失效。**
+
+**WARNING: 删除元素的成员函数并不检查其参数。在删除元素之前，程序员必须确保它是存在的。**
+
+### pop_front和pop_back成员函数
+pop_fornt和pop_back成员函数分别删除首元素和尾元素。与vector和string不支持push_front一样，这些类型也不支持pop_front。类似的forward_list也不支持pop_back。与元素访问成员函数类似，不能对一个空容器执行弹出操作。
+
+这些操作返回void。如果你需要弹出的元素的值，就必须在弹出操作前保存它：
+
+```c++
+while (!ilist.empty()) {
+    process(ilist.front());  // 对ilist的首元素进行一些处理
+    ilist.pop_fornt();  // 完成处理后删除首元素
+}
+```
+
+### 从容器内部删除一个元素
+成员函数erase从容器中指定位置删除元素。我们可以删除有一个迭代器指定的单个元素，也可以删除由一对元素指定的范围内的所有元素。两种形式的erase都返回只想删除的元素之后位置的迭代器。即，若j是i之后的元素，那么erase(i)将返回指向j的迭代器。
+
+例如，下面的循环删除一个list中的所有奇数元素：
+
+```c++
+list<int> 1st = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+auto it = 1st.begin();
+while (it != 1st.end())  {
+    if (*it % 2) {
+        it = 1st.erase(it);
+    } else {
+        it++;
+    }
+}
+```
+
+### 删除多个元素
+接受一对迭代器的erase版本允许我们删除一个范围内的元素：
+
+```c++
+// 接受两个迭代器表示的范围内的元素
+// 返回指向最后一个被删元素之后位置的迭代器
+elem1 = slist.erase(elem1, elem2);  // 调用后，elem1 == elem2
+```
+
+迭代器elem1指向我们要删除的第一个元素，elem2指向我们要删除的最后一个元素之后的位置。
+
+为了删除一个容器中的所有元素，我们既可以调用clear，也可以用begin和end获得的迭代器作为参数调用erase;
+
+```c++
+slist.clear();  // 删除容器中所有元素
+slist.erase(slist.begin(), slist.end());  // 删除容器中所有元素
+```
