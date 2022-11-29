@@ -169,3 +169,37 @@ sort(words.begin(), words.end(), isShorter);
 // 按单词由长至短排序
 sort(words.begin(), words.end(), bind(isShorter, _2, _1));
 ```
+
+### 绑定引用参数
+默认情况下，bind的那些不是占位符的参数被拷贝到bind返回的可调用对象中。但是，与lambda类似，有时对有些绑定的参数我们希望以引用方式传递，或是要绑定参数的类型无法拷贝。
+
+例如，为了替换一个引用方式捕获ostream的lambda:
+
+```c++
+// os是一个局部变量，引用一个输出流
+// c是一个局部变量，类型为char
+for_each(words.begin(), words.end(), [&os, c](const string &s){ os << s << c; });
+```
+
+可以很容易地编写一个函数，完成相同的工作:
+
+```c++
+ostream &print(ostream &os, const string &s, char c) {
+    return os << s << c;
+}
+```
+
+但是不能直接用bind来代替对os的捕获:
+
+```c++
+// 错误;不能拷贝os
+for_each(words.begin(), words.end(), bind(print, os, _1, ' '));
+```
+
+原因在于bind拷贝其参数，而我们不能拷贝一个ostream。如果我们希望传递给bind一个对象而又不拷贝它，就必须使用标准库ref函数:
+
+```c++
+for_each(words.begin(), words.end(), bind(print, ref(os), _1, ' '));
+```
+
+函数ref返回一个对象，包含给定的引用，此对象是可以拷贝的。标准库中还有一个cref函数，生成一个保存const引用的类。与bind一样，函数ref和cref也定义在头文件functional中。
