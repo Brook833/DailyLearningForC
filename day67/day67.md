@@ -76,7 +76,7 @@ fill_n(back_inserter(vec), 10, 0);  // 添加10个元素到vec
 int a1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 int a2[sizeof(a1)/sizeof(*a1)];  // a2与a1大小一样。
 // ret指向拷贝到a2尾元素之后的位置
-auto ret = copy(begin(a1), end(a2), a2);  // 把a1的内容拷贝给a2
+auto ret = copy(begin(a1), end(a1), a2);  // 把a1的内容拷贝给a2
 ```
 
 此例中我们定义了一个名为a2的数组，并使用sizeof确保a2与数组a1包含同样多的元素。接下来我们调用copy完成从a1到a2的拷贝。在调用copy后，两个数组中的元素具有相同的值。
