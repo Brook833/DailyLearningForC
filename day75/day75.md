@@ -99,4 +99,42 @@ for (auto e : vec) {
 cout << endl;
 ```
 
+运算符*和++实际上对ostream_iterator对象不做任何事，因此忽略它们对我们的程序没有任何影响。但是，推荐第一种形式。在这种写法中，流迭代器的使用与其他迭代器的使用保持一致。如果像将此循环改为其他迭代器类型，修改起来也非常容器。而且，对于读者来说，此循环的行为也更为清晰。
 
+可以通过调用copy来打印vec中的元素，这比编写循环更为简单:
+
+```c++
+copy(vec.begin(),vec.end(), out_iter);
+cout << endl;
+```
+
+### 使用流迭代器处理类类型
+我们可以为任何定义了输入运算符(>>)的类型创建istream_iterator对象。类型的，只要类型有输出运算符(<<)，我们就可以为其定义ostream_iterator。由于Sales_item既有输入运算符也有输出运算符，因此可以使用IO迭代器重写书店程序：
+
+```c++
+istream_iterator<Sales_item> item_iter(cin), eof;
+ostream_iterator<Sale_item> out_iter(cout, "\n");
+// 将第一笔交易记录存在sum中，并读取下一条记录
+Sales_item sum = *item_iter++;
+while(item_iter != eof) {
+    // 如果当前交易记录(存在item_iter中)有着相同的ISBN号
+    if(item_iter->isbn() == sum.isbn()) {
+        sum += *item_iter++;  // 将其加到sum上并读取下一条记录
+    } else {
+        out_iter = sum;  // 输出sum当前值
+        sum = *item_iter++;  // 读取下一条记录
+    }
+}
+out_iter = sum;  // 记得打印最后一组记录的和
+```
+
+此程序使用item_iter从cin读取Sales_item交易记录，并将和写入cout，每个结果后面都跟一个换行符。定义了自己的迭代器后，我们就可以用item_iter读取第一条交易记录，用它的值来初始化sum:
+
+```c++
+// 将第一条交易记录保存在sum中，并读取下一条记录
+Sales_item sum = *item_iter++;
+```
+
+此处，我们对item_item执行后置递增操作，对结果进行解引用操作。这个表达式读取下一条交易记录，并用之前保存在item_iter中的值来初始化sum。
+
+while循环会反复执行，直至在cin上遇到文件尾为止。在while循环体中，我们检查sum与刚刚读入的记录是否对应同一本书。如果两者的ISBN不同，我们将sum赋予out_iter，这将会打印sum的当前值，并接着打印一个换行符。在打印了前一本书的交易金额之和后，我们将最近读入的交易记录的副本赋予sum，并递增迭代器，这将读取下一条交易记录。循环会这样持续下去，直至遇到错误或文件尾。在推出之前，记住要打印输入中最后一本书的交易金额之和。
