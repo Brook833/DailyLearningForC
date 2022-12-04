@@ -74,3 +74,4 @@ remove_copy_if(v1.begin(), v1.end(), back_inserter(v2), [](int i) { return i % 2
 ```
 
 两个算法都调用了lambda来确定元素是否为奇数。在第一个调用中，我们从输入序列中将奇数元素删除。在第二个调用中，我们将非奇数(即偶数)元素从输入范围拷贝到v2中。
+
