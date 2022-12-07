@@ -89,4 +89,4 @@ bool compareIsbn(const Sales_data &lhs, const Sales_data &rhs) {
 multiset<Sales_data, decltype(compareIsbn) *> bookstore(compareIsbn);
 ```
 
-此处，我们使用decltype来指出自定义操作的类型。
+此处，我们使用decltype来指出自定义操作的类型。记住，当用decltype来获得一个函数指针类型时，必须加上一个*来指出我们要使用一个给定函数类型的指针。用comparedIsbn来初始化bookstore对象，这表示当我们向bookstore添加元素时，通过调用compareIsbn来为这些元素排序。即，bookstore中的元素将按它们的ISBN成员的值排序。可以用compareIsbn代替&compareIsbn作为构造函数的参数，因为当我们使用一个函数的名字时，在需要的情况信息它会自动转化为一个指针。当然，使用&compareIsbn的效果也是一样的。
