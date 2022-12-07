@@ -10,10 +10,10 @@ int main() {
     string word;
     
     while (cin >> word) {
-        ++counts.[word];
+        ++counts[word];
     }
 
-    for (auto a : coutns) {
+    for (auto a : counts) {
         cout << a.first << "出现" << a.second << " 次" << endl;
     }
 
