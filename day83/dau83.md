@@ -39,4 +39,4 @@ map<string, size_t>::value_type (s, 1);
 | c.insert(b, e) | b和e实迭代器，表示个c::value_type类型值的范围 |
 | c.insert(i1) | i1是这种值的花括号列表。函数返回void |
 |  | 对于map和set，只插入关键字不在c中的元素。对于multimap和multiset，则会插入范围中的每个元素 |
-| c.insert(p, v) | 类似insert(v)(或)
+| c.insert(p, v) | 类似insert(v)(或emplace(args)),但迭代器p作为一个指示，之处从哪里开始搜索新元素应该存储的位置。返回一个迭代器，指向具有给定关键字的元素。 | 
