@@ -149,3 +149,47 @@ for (const auto c : word_count) {
 | c.max_bucket_count() | 容器能容纳的最多的桶的数目 |
 | c.bucket_size(n) | 第n个桶中有多少个元素 |
 | c.bucket(k) | 关键字为k的元素在哪个桶中 |
+| 桶迭代 |  |
+| local_iterator | 可以用来访问桶中元素的迭代器类型 |
+| const_local_iterator | 桶迭代器的const版本 |
+| c.begin(n), c.end(n) | 桶n的首元素迭代器和尾后迭代器 |
+| c.cbegin(n), c.cend(n) | 与前两个函数类似，但返回const_local_iterator |
+| 哈希策略 |
+| c.load_factor() | 每个桶的平均元素数量，返回float值 |
+| c.max_load_factor() | c试图维护平均桶的大小，返回float值。c会在需要时添加新的桶，以使得load_factro<=max_load_factor |
+| c.rehash(n) | 重组存储，以使得bucket_count>=n且bucket_count > size/max_load_factor |
+| c.reserve(n) | 重组存储，使得c可以保存n个元素且不必rehash |
+
+### 无序容器对关键字类型的要求
+默认情况下，无序容器使用关键字类型的==运算符来比较元素，它们还是用一个hash<key_type>类型的对象来生成每个元素的哈希值。标准库为内质类型(包括指针)提供了hash模板。还为一些标准库类型，包括string和我们将要在第12章介绍的智能指针类型定义了hash。因此，我们呢可以直接定义关键字是内置类型(包括指针类型)、string还是智能指针类型的无序容器。
+
+但是，我们不能直接定义关键字类型为自定义类类型的无序容器。与容器不同，不能直接使用hash模板，而必须提供我们自己的hash模板版本。我们将在16.5节中介绍如何做到这一点。
+
+我们不使用默认的hash，而是使用另一种方法，类似于为有序容器重载关键字类型的默认比较操作。为了能将Sale_data用作关键字，我们需要提供函数还替代==运算符和哈希值计算函数。我们从定义这些重载函数开始:
+
+```c++
+size_t hasher(const Sales_data &sd) {
+    return hash<string>()(sd.isbn());
+}
+bool eqOp(const Sales_data &lhs, const Sales_data &rhs) {
+    return lhs.isbn() == rhs.isbn();
+}
+```
+
+我们的hasher函数使用一个标准库hash类型对象来计算ISBN成员的哈希值，该hash类型建立在string类型之上。类似的，eqOp函数通过比较ISBN号来比较两个Sales_data。
+
+我们使用这些函数来定义一个unordered_multiset:
+
+```c++
+usingSD_multiset = unordered_multiset<Sales_data, decltype(hasher)*, decltype(eqOp)*>;
+// 参数是桶大小、哈希函数指针和相等性判断运算符指针
+SD_multiset bookstore(42, hasher, eqOp);
+```
+
+为了简化bookstore的定义，首先为unordered_multiset定义了一个类型别名，此集合的哈希和相等性判断操作与hasher和eqOph函数有着相同的类型。通过使用这种类型，在定义bookstore时可以将我们希望它使用的函数的指针传递给他。
+
+如果我们的类定义了==运算符，则可以只重载哈希函数:
+
+```c++
+// 使用FooHash生成哈希值；Foo必须有==运算符
+unordered_set<Foo, decltype(FootHash)*> fooSet(10, FooHash);
