@@ -1,0 +1,1 @@
+// 因为其类型是vector<string>::size_type，是一个无符号数，只可能大于等于0.
