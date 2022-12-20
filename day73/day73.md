@@ -203,3 +203,100 @@ for_each(words.begin(), words.end(), bind(print, ref(os), _1, ' '));
 ```
 
 函数ref返回一个对象，包含给定的引用，此对象是可以拷贝的。标准库中还有一个cref函数，生成一个保存const引用的类。与bind一样，函数ref和cref也定义在头文件functional中。
+
+### 12.1.5 unique_ptr
+一个unique_ptr"拥有"它所指向的对象。与shared_ptr不同，某个时刻只能有一个unique_ptr指向一个给定对象。当unique_ptr被销毁时，它所指向的对象也被销毁。表12.4列出了unique_ptr特有的操作。与shared_ptr相同的操作列在表12.1中。
+
+与shared_ptr不同，没有类似make_shared的标准库函数返回一个unique_Ptr。当我们定义一个unique_ptr时，需要将其绑定到一个new返回的指针上。类似shared_ptr，初始化unique_ptr必须采用直接初始化形式:
+
+```c++
+unique_ptr<double> p1;  // 可以指向一个double的unique_ptr
+unique_ptr<int> p2 (new int(42));  // p2只想一个值为42的int
+```
+
+由于一个unique_ptr拥有它指向的对象，因此unique_ptr不支持普通的拷贝或赋值操作:
+
+```c++
+unique_ptr<string> p1(new string("Stegosaurus"));
+unique_ptr<string> p2(p1);  // 错误:unique_ptr不支持拷贝
+unique_ptr<string> p3;
+p3 = p2;  // 错误:unique_ptr不支持赋值
+```
+
+| 表12.4:unique_ptr操作 |  |
+|:- |:- |
+| unique_ptr<T> u1 | 空unique_ptr，可以指向类型为T的对象。u1会使用delete来释放它的指针 |
+| unique_ptr<T, D> u2 | u2会使用一个类型为D的可调用对象来释放它的指针 |
+| unique_ptr<T, D> u(d) | 空unique_ptr，指向类型为T的对象，用类型为D的对象d代替delete |
+| u = nullptr | 释放u指向的对象，将u置为空 |
+| u.release() | u放弃对指针的控制权，返回指针，并将u置为空 |
+| u.reset() | 释放u指向的对象 |
+| u.reset(q) | 如果提供了内置指针q，令u指向这个对象；否则将u置为空 |
+| u.reset(nullptr) |  |
+
+虽然我们不能拷贝或赋值unique_ptr，但可以通过调用release或reset将指针的所有权从一个(非const)unique_ptr转移给另一个unique:
+
+```c++
+unique_ptr<string> p2(p1.release());  // release将p1置为空,将所有权从p1(指向string Stegosaurus)转移给p2
+unique_ptr<string> p3(new string("Trex"));
+p2.reset(p3.release);  //将所有权从p3转移给p2，reset释放了p2原来指向的内存
+```
+
+release成员返回unique_ptr当前保存的指针并将其置为空。因此，p2被初始化为p1原来保存的指针，而p1被置为空。
+
+reset成员接受一个可选的指针参数，令unique_ptr重新指向给定的指针。如果unique_ptr不为空，它原来指向的对象被释放。因此，对p2调用reset释放了用"Stegosaurus"初始化string所使用的内存，将p3对指针的所有权转移给p2,并将p3置为空。
+
+调用release会切断unique_ptr和它原来管理的对象间的关系。release返回的指针通常被用来初始化另一个智能指针或给另一个智能指针赋值。在本例中，管理内存的责任简单的从一个智能指针转移给另一个。但是，如果我们不用另一个智能指针来保存release返回的指针，我们的程序就要负责资源的释放:
+
+```c++
+p2.release();  // 错误，p2不会释放内存，而且我们丢失了指针
+auto p = p2.release();  // 正确，但我们必须记得delete(p);
+```
+
+#### 传递unique_ptr参数和返回unique_ptr
+不能拷贝unique_ptr的规则有一个例外:我们可以拷贝或赋值一个将要被销毁的unique_ptr。最常见的例子是从函数返回一个unique_ptr:
+
+```c++
+unique_ptr<int> clone(int p) {
+    return unique_ptr<int> (new int(p));  // 正确，从int*创建一个unique_ptr<int>
+}
+```
+
+还可以返回一个局部对象的拷贝:
+
+```c++
+unique_ptr<int> clone(int p) {
+    unique_ptr<int> ret(new int(p));
+    return ret;
+}
+```
+
+对与两段代码，编译器都知道要返回的对象即将被销毁。在此情况下，编译器执行一种特殊的"拷贝"，我们将在13.6.2节中介绍它。
+
+==向后兼容:auto_ptr
+标准库的较早版本包含了一个名为auto_ptr的类，它具有unique_ptr的部分特性，但不是全部。特别是，我们不能在容器中保存auto_ptr,也不能从函数中返回auto_ptr。
+虽然auto_ptr仍是标准库的一部分，但编写程序时应该使用unique_ptr。==
+
+#### 向unique_ptr传递删除器
+类似shared_ptr，unique_ptr默认情况下用delete释放它指向的对象。与shared_ptr一眼，我们可以重载一个unique_ptr中默认的删除器。但是，unique_ptr管理删除器的方式与shared_ptr不同，其原因我们将在16.1.6节中介绍。
+
+重载一个unique_ptr中的删除器会影响到unique_ptr类型以及如何构造(或reset)该类型的对象。与重载操作关联容器的比较操作类似，我们必须在尖括号中unique_ptr指向类型之后提供删除器类型。在创建或reset一个这种unique_ptr类型的对象时，必须提供一个指定类型的可调用对象(删除器):
+
+```c++
+// p指向一个类型为objT的对象，并使用一个类型为detT的对象释放objT对象
+// 它会调用一个名为fcn的delT类型对象
+unique_ptr<objT, delT>p (new objT, fcn);
+```
+
+作为一个更具体的例子，我们将重写连接程序，用unique_ptr代替shared_ptr,如下所示:
+
+```c++
+void f(destination &d) {
+    connection c = connect(&d);  // 打开连接
+    unique_ptr<connectionr, decltype(end_connection) *> p(&c, end_connection);  // 当p被销毁时，连接将会关闭
+    // 使用连接
+    // 当f退出时(即使时由于异常而退出)，connection会被正确关闭
+}
+```
+
+在本例中我们使用decltype来之名函数指针类型。由于decltype返回一个函数类型，所以我们必须添加一个*来指出我们正在使用该类型的一个指针。
