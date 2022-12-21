@@ -22,7 +22,8 @@ public:
     std::string& back();
     const std::string& back() const;
 
-    //StrBlobPtr begin() { return StrBlob(*this); }
+    StrBlobPtr begin() { return StrBlobPtr(*this); }
+    StrBlobPtr end() { auto ret = StrBlobPtr(*this, data->size()); return ret;}
 
 private:
     std::shared_ptr<std::vector<std::string>> data;
@@ -62,6 +63,8 @@ const std::string& StrBlob::back() const {
 }
 
 class StrBlobPtr {
+// 比较操作
+friend bool eq(const StrBlobPtr &, const StrBlobPtr &);
 public:
     StrBlobPtr() : curr(0) {}
     StrBlobPtr(StrBlob &a, size_t sz = 0) : wptr(a.data), curr(sz) {}
@@ -85,4 +88,30 @@ std::shared_ptr<std::vector<std::string>> StrBlobPtr::check(std::size_t i, std::
     return ret;
 }
 
+std::string& StrBlobPtr::redef() const {
+    std::string s("error");
+    auto ret = check(curr, s);
+    return (*ret)[curr];
+}
+
+StrBlobPtr& StrBlobPtr::incr() {
+    std::string s("error");
+    auto ret = check(curr, s);
+    ++curr;
+    return *this;
+}
+
+bool eq(const StrBlobPtr &lhs, const StrBlobPtr &rhs) {
+    auto l = lhs.wptr.lock(), r = rhs.wptr.lock();
+    // 若底层的 vector 是同一个
+    if (l == r)
+        // 则两个指针都是空，或者指向相同元素时，它们相等
+        return (!r || lhs.curr == rhs.curr);
+    else
+        return false;       // 若指向不同 vector，则不可能相等
+}
+
+bool neq(const StrBlobPtr &lhs, const StrBlobPtr &rhs) {
+    return !eq(lhs, rhs);
+}
 #endif  // STRBLOB_H_
