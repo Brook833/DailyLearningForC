@@ -77,6 +77,7 @@ private:
     std::weak_ptr<std::vector<std::string>> wptr;
     std::size_t curr;  // 在数组中的当前位置
 };
+
 std::shared_ptr<std::vector<std::string>> StrBlobPtr::check(std::size_t i, std::string& msg) const {
     auto ret = wptr.lock();
     if (!ret) {
