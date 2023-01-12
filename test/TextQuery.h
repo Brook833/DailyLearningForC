@@ -1,41 +1,34 @@
-#ifndef TEXTQUERY
-#define TEXTQUERY
+#ifndef TEXTQUERY_QUERYRESULT_
+#define TEXTQUERY_QUERYRESULT_
 
-#include <fstream>
-#include <iostream>
-#include <map>
-#include <memory>
-#include <set>
-#include <string>
 #include <vector>
+#include <fstream>
+#include <string>
+#include <map>
+#include <set>
+#include <memory>
 
 using namespace std;
 
-class QueryResult;
+class QueryReuslt;
 class TextQuery {
- public:
-  using LineNo = vector<string>::size_type;
-  TextQuery(ifstream &infile);  // 保存文件并建立查询map
-  QueryResult query(const string &) const;
-
- private:
-  static string cleanup_str(const string &);
-  shared_ptr<vector<string>> input;
-  map<string, shared_ptr<set<LineNo>>> query_map;
+public:
+  using line_type = vector<string>::size_type;
+  TextQuery(ifstream &);  // 构造函数，存储单词与行号
+  QueryReuslt query(const string &) const;  //查询函数
+private:
+map<string, shared_ptr<set<line_type>>> store_map;  //存储字符串与其行号信息的map
+shared_ptr<vector<string>> file;  // 输入文件
 };
 
 class QueryResult {
- public:
-  friend ostream &print_result(ostream &, const QueryResult &);
-
- public:
-  QueryResult(const string &s, shared_ptr<set<TextQuery::LineNo>> set,
-              shared_ptr<vector<string>> v)
-      : word(s), query_lines(set), input(v) {}
-
- private:
-  string word;                                     // 查询的字符串
-  shared_ptr<set<TextQuery::LineNo>> query_lines;  // 查询的字符串对应的行号
-  shared_ptr<vector<string>> input;                // 输入
+  friend ostream& print_query_result(ostream &, const QueryResult &);  // 打印查询信息
+public:
+  QueryResult(string &s, shared_ptr<set<line_type>> p, shared_ptr<vector<string>> f);
+private:
+  string query_word;
+  shared_ptr<set<line_type>> store_set;
+  shared_ptr<vector<string>> 
 };
-#endif  // TEXTQUERY
+
+#endif  // TEXTQUERY_QUERYRESULT_
