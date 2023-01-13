@@ -10,15 +10,15 @@
 
 using namespace std;
 
-class QueryReuslt;
+class QueryResult;
 class TextQuery {
  public:
   using line_type = vector<string>::size_type;
   TextQuery(ifstream &);  // 构造函数，存储单词与行号
-  QueryReuslt query(const string &) const;  // 查询函数
+  QueryResult query(const string &) const;  // 查询函数
  private:
   map<string, shared_ptr<set<line_type>>>
-      store_map;                    // 存储字符串与其行号信息的map
+      store_map;  // 存储字符串与其行号信息的map
   shared_ptr<vector<string>> p_input;  // 输入文件
 };
 
@@ -26,7 +26,7 @@ class QueryResult {
   friend ostream &print_query_result(ostream &,
                                      const QueryResult &);  // 打印查询信息
  public:
-  QueryResult(string &s, shared_ptr<set<TextQuery::line_type>> p,
+  QueryResult(const string &s, shared_ptr<set<TextQuery::line_type>> p,
               shared_ptr<vector<string>> f)
       : query_word(s), set_lines(p), p_input(f) {}
 
@@ -37,4 +37,5 @@ class QueryResult {
   shared_ptr<vector<string>> p_input;  // 输入文件
 };
 
+std::ostream &print_query_result(std::ostream &, const QueryResult &);
 #endif  // TEXTQUERY_QUERYRESULT_
