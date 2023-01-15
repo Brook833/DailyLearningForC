@@ -40,5 +40,9 @@ ostream& print_query_result(ostream& out, const QueryResult& qr) {
    for (auto c : *qr.set_lines) {
     out << c << ": //" << *(qr.p_input->begin() + c) << endl;
    }
+
+   for (auto c : *qr.p_input) {
+    cout << c << " ";
+   }
    return out;
 }
