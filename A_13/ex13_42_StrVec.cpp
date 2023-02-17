@@ -1,4 +1,4 @@
-#include "StrVec.h"
+#include "ex13_42_StrVec.h"
 
 void StrVec::push_back(const string &s) {
     // 如果没有空间存放新元素，创建二倍大小的空间来存放，并将旧string移动到新的内存中
