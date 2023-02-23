@@ -37,12 +37,30 @@ String::String(const String& s) {
     std::cout << "拷贝构造函数" << std::endl;
 }
 
+String::String(String &&s) noexcept {
+    elements = std::move(s.elements);
+    end = std::move(s.end);
+    s.elements = nullptr;
+    s.elements = end;
+}
+
 String& String::operator= (const String &s) {
     free();
     auto pair_ = alloc_n_copy(s.elements, s.end);
     elements = pair_.first;
     end = pair_.second;
     std::cout << "拷贝赋值运算符" << std::endl;
+    return *this;
+}
+
+String& String::operator= (String &&s) {
+    if (this != &s) {
+        free();
+        elements = s.elements;
+        end = s.end;
+        s.elements = nullptr;
+        s.end = nullptr;
+    }
     return *this;
 }
 

@@ -24,7 +24,9 @@ public:
     String();
     String(const char* s);
     String(const String&);
+    String(String &&s) noexcept;
     String& operator= (const String&);
+    String& operator= (String&&) noexcept;
     ~String();
 };
 
