@@ -18,6 +18,9 @@ public:
     return *this;
    }
 
+    void push_back(string &&t) {
+        data->push_back(std::move(t));
+    }
 private:
     std::shared_ptr<std::vector<std::string>> data;
     void check(size_type i, const std::string& msg) const;
