@@ -13,7 +13,7 @@ public:
         cout << "Bulk_quote(const string& a, double b, size_t c, double d)" << endl;
     }
 
-    Bulk_quote(Bulk_quote &rhs) : Quote(rhs), min_qty(rhs.min_qty), discount(rhs.discount) {
+    Bulk_quote(const Bulk_quote &rhs) : Quote(rhs), min_qty(rhs.min_qty), discount(rhs.discount) {
         cout << "Bulk_quote(Bulk_quote &rhs)" << endl;
     }
     Bulk_quote& operator=(const Bulk_quote &rhs) {
@@ -40,8 +40,8 @@ public:
         cout << "Bulk_quote: " << min_qty << " " << discount << endl; 
     }
 
-    Bulk_quote* clone() const & { return new Bulk_quote(*this); }
-
+    Bulk_quote *clone() const & { return new Bulk_quote(*this); }
+    Bulk_quote *clone() && { return new Bulk_quote(std::move(*this)); }
 
     double net_price(size_t a) const override {
         if (a >= min_qty) {
