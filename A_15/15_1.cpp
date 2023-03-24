@@ -1,3 +1,10 @@
-/*
-在类中被声明为virtual的成员，基类希望这种成员在派生类中重定义。除了构造函数外，任意非static成员都可以为虚成员。
-*/
+#include <iostream>
+#include <map>
+using namespace std;
+
+int main() {
+  cout << __cplusplus << endl;
+  cout << "Come on HuaWei, Come on China" << endl;
+  system("pause");
+  return 0;
+}
